@@ -1,8 +1,4 @@
 #!/bin/bash
-
-# 이 스크립트는 시스템 타임존과 상관없이 KST(UTC+9) 기준으로
-# 매일 07:01, 12:01, 17:01, 22:01에 Claude에게 짧은 응원 메시지를 요청합니다.
-
 readonly KST_OFFSET=$((9 * 3600))
 target_hours=(7 12 17 22)
 
@@ -42,7 +38,7 @@ next_scheduled_epoch() {
 }
 
 echo "시작할 때 한 번 호출"
-response=$(claude -p "짧은 응원 한 문장:")
+response=$(claude -p "ssh 약자는? 간단하게 답변:")
 echo "Claude says: $response"
 echo "====================="
 
@@ -59,27 +55,7 @@ while true; do
         continue
     fi
 
-    hour_kst=$(format_epoch_kst "$now" "+%H")
-    hour_kst=$((10#$hour_kst))
-
-    case "$hour_kst" in
-        7)
-            prompt="짧게 아침 응원 한 문장:"
-            ;;
-        12)
-            prompt="짧게 점심 응원 한 문장:"
-            ;;
-        17)
-            prompt="짧게 저녁 응원 한 문장:"
-            ;;
-        22)
-            prompt="짧게 밤 응원 한 문장:"
-            ;;
-        *)
-            prompt="짧게 응원 한 문장:"
-            ;;
-    esac
-
+    prompt="ssh 약자는? 간단하게 답변:"
     echo "Asking Claude: $prompt"
     response=$(claude -p "$prompt")
     echo "Claude says: $response"
