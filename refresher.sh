@@ -59,6 +59,7 @@ while true; do
     echo "Asking Claude: $prompt"
     response=$(claude -p "$prompt")
     echo "Claude says: $response"
+    echo "====================="
 
     now=$(date -u +%s)
     next_call_epoch=$(next_scheduled_epoch "$now")
