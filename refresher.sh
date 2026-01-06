@@ -38,7 +38,8 @@ next_scheduled_epoch() {
 }
 
 echo "시작할 때 한 번 호출"
-response=$(claude -p "ssh 약자는? 간단하게 답변:")
+prompt="ssh 약자는? 한 문장으로 짧게 답변:"
+response=$(claude -p "$prompt")
 echo "Claude says: $response"
 echo "====================="
 
@@ -55,7 +56,6 @@ while true; do
         continue
     fi
 
-    prompt="ssh 약자는? 간단하게 답변:"
     echo "Asking Claude: $prompt"
     response=$(claude -p "$prompt")
     echo "Claude says: $response"
