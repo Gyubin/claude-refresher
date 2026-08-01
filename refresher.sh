@@ -18,14 +18,16 @@ fi
 
 next_scheduled_epoch() {
     local ts=$1
-    local ts_kst seconds_since_midnight day_start_kst target_hour candidate_kst
+    local ts_kst seconds_since_midnight day_start_kst idx target_hour candidate_kst
 
     ts_kst=$((ts + KST_OFFSET))
     seconds_since_midnight=$((ts_kst % 86400))
     day_start_kst=$((ts_kst - seconds_since_midnight))
 
-    for target_hour in "${target_hours[@]}"; do
-        candidate_kst=$((day_start_kst + target_hour * 3600 + 60))
+    # 슬롯마다 1분씩 뒤로 밀어 직전 호출의 5시간 window가 확실히 리셋된 뒤에 호출한다
+    for idx in "${!target_hours[@]}"; do
+        target_hour=${target_hours[idx]}
+        candidate_kst=$((day_start_kst + target_hour * 3600 + (idx + 1) * 60))
         if [ "$ts_kst" -lt "$candidate_kst" ]; then
             echo $((candidate_kst - KST_OFFSET))
             return
@@ -37,15 +39,19 @@ next_scheduled_epoch() {
     echo $((candidate_kst - KST_OFFSET))
 }
 
-echo "시작할 때 한 번 호출"
 prompt="ssh 약자를 한 문장으로 짧게:"
 model="claude-haiku-4-5-20251001"
-response=$(claude -p "$prompt" --model "$model" --output-format json)
-echo "Claude result:"
-echo "$response"
-echo "====================="
+
+# 시작 시각은 슬롯과 무관하므로 여기서 프롬프트를 보내면 엉뚱한 시각에 limit window가
+# 열려 다음 슬롯 호출을 삼킨다. window를 소모하지 않는 점검만 하고 첫 슬롯까지 기다린다.
+if ! claude_version=$(claude --version 2>&1); then
+    echo "claude CLI를 실행할 수 없습니다: $claude_version" >&2
+    exit 1
+fi
+echo "claude CLI OK ($claude_version)"
 
 next_call_epoch=$(next_scheduled_epoch "$(date -u +%s)")
+echo "Next claude call scheduled for $(format_epoch_kst "$next_call_epoch")"
 
 while true; do
     now=$(date -u +%s)
