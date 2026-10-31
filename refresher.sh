@@ -39,7 +39,7 @@ next_scheduled_epoch() {
     echo $((candidate_kst - KST_OFFSET))
 }
 
-prompt="ssh 약자를 한 문장으로 짧게:"
+prompt="Say only: ok"
 model="claude-haiku-4-5-20251001"
 
 # 시작 시각은 슬롯과 무관하므로 여기서 프롬프트를 보내면 엉뚱한 시각에 limit window가
@@ -65,7 +65,10 @@ while true; do
     fi
 
     echo "Asking Claude: $prompt"
-    response=$(claude -p "$prompt" --model "$model" --output-format json)
+    # 빈 디렉터리·설정/도구/MCP/thinking 없이 호출해 입력·출력 토큰을 최소화한다
+    response=$(cd /tmp && MAX_THINKING_TOKENS=0 claude -p "$prompt" --model "$model" \
+        --max-turns 1 --tools "" --strict-mcp-config --setting-sources "" \
+        --system-prompt "Answer with one word." --output-format json)
     echo "Claude result:"
     echo "$response"
     echo "====================="
