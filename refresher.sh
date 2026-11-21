@@ -40,7 +40,7 @@ next_scheduled_epoch() {
 }
 
 prompt="Say only: ok"
-model="claude-haiku-4-5-20251001"
+model="claude-haiku-5-5"
 
 # 시작 시각은 슬롯과 무관하므로 여기서 프롬프트를 보내면 엉뚱한 시각에 limit window가
 # 열려 다음 슬롯 호출을 삼킨다. window를 소모하지 않는 점검만 하고 첫 슬롯까지 기다린다.
