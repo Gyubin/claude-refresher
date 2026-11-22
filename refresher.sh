@@ -69,9 +69,12 @@ while true; do
     response=$(cd /tmp && MAX_THINKING_TOKENS=0 claude -p "$prompt" --model "$model" \
         --max-turns 1 --tools "" --strict-mcp-config --setting-sources "" \
         --system-prompt "Answer with one word." --output-format json)
-    echo "Claude result:"
-    echo "$response"
-    echo "====================="
+    # jq가 없거나 응답이 JSON이 아니면 요약 대신 원본을 그대로 출력한다
+    summary=$(jq -r 'if .is_error
+        then "ERROR \(.subtype): \(.result // .api_error_status)"
+        else "\(.result) (model=\(.modelUsage | keys | join(",")), in=\(.usage.input_tokens + .usage.cache_creation_input_tokens + .usage.cache_read_input_tokens), out=\(.usage.output_tokens), cost=$\(.total_cost_usd))"
+        end' <<<"$response" 2>/dev/null)
+    echo "Claude result: ${summary:-${response:-(no output)}}"
 
     now=$(date -u +%s)
     next_call_epoch=$(next_scheduled_epoch "$now")
